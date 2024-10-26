@@ -1,0 +1,32 @@
+Postgres
+
+CREATE OR REPLACE FUNCTION preventDropTables()
+RETURNS event_trigger AS $$
+BEGIN
+    RAISE EXCEPTION 'Dropping tables is not allowed.';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE EVENT TRIGGER preventDropTablesTrigger
+ON ddl_command_start
+WHEN TAG IN ('DROP TABLE', 'DROP SCHEMA')
+EXECUTE FUNCTION preventDropTables();
+
+SQL Server
+
+CREATE TRIGGER preventDropTables
+ON DATABASE
+FOR DROP_TABLE
+AS
+BEGIN
+    PRINT 'Dropping tables is not allowed.';
+    ROLLBACK;
+END;
+
+Oracle:
+
+CREATE OR REPLACE TRIGGER preventDrop
+BEFORE DROP ON SCHEMA
+BEGIN
+    RAISE_APPLICATION_ERROR(-20001, 'Dropping tables is not allowed.');
+END;
